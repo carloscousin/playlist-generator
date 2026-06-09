@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asheville Trip Companion</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #f4f4f6;
+      --surface:      #ffffff;
+      --surface-2:    #f9f9fb;
+      --border:       #e4e4ea;
+      --text-primary: #1a1a2e;
+      --text-muted:   #6b6b80;
+      --text-subtle:  #9999ad;
+      --accent:       #5048e5;
+      --accent-light: #ede9fe;
+      --accent-dark:  #3730a3;
+      --amber:        #d97706;
+      --amber-light:  #fef3c7;
+      --green:        #059669;
+      --green-light:  #d1fae5;
+      --radius-sm:    8px;
+      --radius-md:    14px;
+      --radius-lg:    20px;
+      --shadow-sm:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:    0 4px 16px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg:    0 8px 32px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.05);
+      --font:         -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .brand-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .brand-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -.4px;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+
+    .header-badge {
+      background: var(--accent-light);
+      color: var(--accent-dark);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      padding: 5px 10px;
+      border-radius: 99px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    /* ── Nav Tabs ────────────────────────────────────────────── */
+    .nav-tabs {
+      display: flex;
+      gap: 2px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color .15s, border-color .15s;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+
+    .nav-tab:hover { color: var(--text-primary); }
+
+    .nav-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .nav-tab .tab-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    /* ── Main Content ────────────────────────────────────────── */
+    .app-main {
+      flex: 1;
+      padding: 28px 24px 48px;
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── Section Headers ─────────────────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Cards ───────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 22px;
+      margin-bottom: 14px;
+    }
+
+    .card:last-child { margin-bottom: 0; }
+
+    /* ── Day Selector (Itinerary) ────────────────────────────── */
+    .day-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .day-selector::-webkit-scrollbar { display: none; }
+
+    .day-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .day-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .day-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+    }
+
+    .day-btn-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .day-btn.active .day-btn-label { color: rgba(255,255,255,.75); }
+
+    .day-btn-date {
+      display: block;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .day-btn.active .day-btn-date { color: #fff; }
+
+    /* ── Timeline ────────────────────────────────────────────── */
+    .timeline { position: relative; }
+
+    .timeline-item {
+      display: flex;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .timeline-item:last-child { margin-bottom: 0; }
+
+    .timeline-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 48px;
+      flex-shrink: 0;
+    }
+
+    .timeline-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--surface);
+      box-shadow: 0 0 0 2px var(--accent);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .timeline-line {
+      width: 1px;
+      flex: 1;
+      background: var(--border);
+      margin-top: 6px;
+    }
+
+    .timeline-time {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: .04em;
+      white-space: nowrap;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .timeline-card {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 0;
+    }
+
+    .event-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      letter-spacing: -.2px;
+    }
+
+    .event-duration {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      margin-bottom: 10px;
+    }
+
+    .event-location {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .event-location-icon {
+      font-size: 13px;
+      color: var(--text-subtle);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .event-location-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .map-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      padding: 6px 12px;
+      background: var(--accent-light);
+      border-radius: 99px;
+      transition: all .15s;
+      letter-spacing: .02em;
+    }
+
+    .map-link:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Dining Hub ──────────────────────────────────────────── */
+    .dining-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dining-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+    }
+
+    .dining-card.curate::before { background: linear-gradient(90deg, #e11d48, #f97316); }
+    .dining-card.neng::before   { background: linear-gradient(90deg, #7c3aed, #2563eb); }
+
+    .dining-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .dining-name {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text-primary);
+      letter-spacing: -.4px;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .dining-type {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .dining-time-badge {
+      background: var(--amber-light);
+      color: var(--amber);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      letter-spacing: -.1px;
+    }
+
+    .dining-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+
+    .dining-detail-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .dining-detail-row:last-child { margin-bottom: 0; }
+
+    .detail-icon {
+      font-size: 14px;
+      color: var(--text-subtle);
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .detail-content {
+      flex: 1;
+    }
+
+    .detail-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 2px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .dining-note {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+
+    .dining-note-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 5px;
+    }
+
+    .dining-note-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .dining-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Lodging ─────────────────────────────────────────────── */
+    .lodging-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .lodging-hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+      padding: 30px 26px;
+      color: #fff;
+    }
+
+    .lodging-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.6);
+      margin-bottom: 8px;
+    }
+
+    .lodging-name {
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -.3px;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .lodging-brand {
+      font-size: 12px;
+      color: rgba(255,255,255,.55);
+      font-weight: 500;
+    }
+
+    .lodging-body {
+      padding: 24px 26px;
+    }
+
+    .lodging-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lodging-row:last-child { border-bottom: none; }
+
+    .lodging-row-icon {
+      font-size: 16px;
+      color: var(--accent);
+      width: 22px;
+      text-align: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .lodging-row-content { flex: 1; }
+
+    .lodging-row-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 3px;
+    }
+
+    .lodging-row-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .lodging-row-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .dates-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 0;
+    }
+
+    .date-block {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+
+    .date-block-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 4px;
+    }
+
+    .date-block-day {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .date-block-date {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      padding: 7px 14px;
+      background: var(--accent-light);
+      border: none;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: all .15s;
+      letter-spacing: .02em;
+      font-family: var(--font);
+    }
+
+    .copy-btn:hover { background: var(--accent); color: #fff; }
+    .copy-btn.copied { background: var(--green-light); color: var(--green); }
+
+    /* ── Packing Manager ─────────────────────────────────────── */
+    .progress-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .progress-text {
+      flex: 1;
+    }
+
+    .progress-fraction {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--text-primary);
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .progress-fraction span {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-subtle);
+    }
+
+    .progress-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .progress-ring-wrap {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-bg {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 4;
+    }
+
+    .progress-ring-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 4;
+      stroke-linecap: round;
+      transition: stroke-dashoffset .4s ease;
+    }
+
+    .progress-ring-pct {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .progress-bar-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #818cf8);
+      border-radius: 99px;
+      transition: width .4s ease;
+    }
+
+    .packing-category {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .packing-category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .category-icon {
+      font-size: 16px;
+    }
+
+    .category-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .category-count {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-subtle);
+    }
+
+    .packing-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .12s;
+    }
+
+    .packing-item:last-child { border-bottom: none; }
+    .packing-item:hover { background: var(--surface-2); }
+    .packing-item.packed { background: var(--green-light); }
+
+    .packing-checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .15s;
+    }
+
+    .packing-item.packed .packing-checkbox {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .check-icon {
+      display: none;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .packing-item.packed .check-icon { display: block; }
+
+    .packing-item-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      flex: 1;
+      transition: color .15s;
+    }
+
+    .packing-item.packed .packing-item-name {
+      color: var(--text-muted);
+      text-decoration: line-through;
+      text-decoration-color: var(--text-subtle);
+    }
+
+    /* ── Utility ─────────────────────────────────────────────── */
+    .mt-4 { margin-top: 16px; }
+    .mt-6 { margin-top: 24px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-subtle);
+    }
+
+    .empty-state-icon { font-size: 36px; margin-bottom: 12px; }
+
+    .empty-state-text {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .app-main { padding: 20px 16px 48px; }
+      .app-header { padding: 16px 16px 0; }
+      .dining-header { flex-direction: column; gap: 10px; }
+      .dates-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Animations ──────────────────────────────────────────── */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .view.active { animation: fadeIn .2s ease; }
+
+    .packing-item { animation: none; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-top">
+      <div>
+        <div class="brand-eyebrow">Trip Companion</div>
+        <div class="brand-title">Asheville ✦ June 2026</div>
+      </div>
+      <div class="header-badge">Jun 12–14</div>
+    </div>
+
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab active" data-view="itinerary" role="tab" aria-selected="true">
+        <span class="tab-icon">📅</span> Itinerary
+      </button>
+      <button class="nav-tab" data-view="dining" role="tab" aria-selected="false">
+        <span class="tab-icon">🍽</span> Dining
+      </button>
+      <button class="nav-tab" data-view="lodging" role="tab" aria-selected="false">
+        <span class="tab-icon">🏨</span> Lodging
+      </button>
+      <button class="nav-tab" data-view="packing" role="tab" aria-selected="false">
+        <span class="tab-icon">🎒</span> Packing
+      </button>
+    </nav>
+  </header>
+
+  <!-- ── Main ────────────────────────────────────────────────── -->
+  <main class="app-main">
+
+    <!-- View 1: Itinerary -->
+    <section class="view active" id="view-itinerary">
+      <div class="day-selector" id="day-selector"></div>
+      <div id="timeline-container"></div>
+    </section>
+
+    <!-- View 2: Dining -->
+    <section class="view" id="view-dining">
+      <div class="section-label">Culinary Reservations</div>
+
+      <!-- Cúrate -->
+      <div class="dining-card curate">
+        <div class="dining-header">
+          <div>
+            <div class="dining-name">Cúrate</div>
+            <div class="dining-type">Spanish Tapas · Biltmore Village</div>
+          </div>
+          <div class="dining-time-badge">12:45 PM</div>
+        </div>
+
+        <div class="dining-divider"></div>
+
+        <div class="dining-detail-row">
+          <div class="detail-icon">📍</div>
+          <div class="detail-content">
+            <div class="detail-label">Address</div>
+            <div class="detail-value">13 Biltmore Avenue, Asheville, NC 28801</div>
+          </div>
+        </div>
+
+        <div class="dining-detail-row">
+          <div class="detail-icon">🕐</div>
+          <div class="detail-content">
+            <div class="detail-label">Reservation Window</div>
+            <div class="detail-value">12:45 PM – 2:15 PM · Saturday, June 13</div>
+          </div>
+        </div>
+
+        <div class="dining-note">
+          <div class="dining-note-label">Curator's Note</div>
+          <div class="dining-note-text">Cúrate brings the vibrant tapas culture of Andalucía to Asheville — expect beautifully composed small plates, jamón ibérico, and expertly curated Spanish wines in a convivial, unhurried atmosphere. Perfect for a languid Saturday afternoon.</div>
+        </div>
+
+        <div class="dining-actions">
+          <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=13+Biltmore+Avenue+Asheville+NC+28801" target="_blank" rel="noopener">
+            🗺 Open in Maps
+          </a>
+        </div>
+      </div>
+
+      <!-- Neng Jr.'s -->
+      <div class="dining-card neng">
+        <div class="dining-header">
+          <div>
+            <div class="dining-name">Neng Jr.'s</div>
+            <div class="dining-type">Filipino Cuisine · West Asheville</div>
+          </div>
+          <div class="dining-time-badge">6:45 PM</div>
+        </div>
+
+        <div class="dining-divider"></div>
+
+        <div class="dining-detail-row">
+          <div class="detail-icon">📍</div>
+          <div class="detail-content">
+            <div class="detail-label">Address</div>
+            <div class="detail-value">701 Haywood Rd Ste 102, Asheville, NC 28806</div>
+          </div>
+        </div>
+
+        <div class="dining-detail-row">
+          <div class="detail-icon">🕐</div>
+          <div class="detail-content">
+            <div class="detail-label">Reservation Window</div>
+            <div class="detail-value">6:45 PM – 8:45 PM · Saturday, June 13</div>
+          </div>
+        </div>
+
+        <div class="dining-note">
+          <div class="dining-note-label">Curator's Note</div>
+          <div class="dining-note-text">Chef Brian Wolfe's acclaimed boutique Filipino restaurant is one of Asheville's most celebrated dining experiences — bold, soulful cooking rooted in Filipino tradition with a deeply personal and creative touch. Reservations here are coveted for good reason.</div>
+        </div>
+
+        <div class="dining-actions">
+          <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=701+Haywood+Rd+Asheville+NC+28806" target="_blank" rel="noopener">
+            🗺 Open in Maps
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 3: Lodging -->
+    <section class="view" id="view-lodging">
+      <div class="section-label">Accommodation</div>
+
+      <div class="lodging-card">
+        <div class="lodging-hero">
+          <div class="lodging-eyebrow">Your Stay</div>
+          <div class="lodging-name">Crowne Plaza Hotels &amp; Resorts Asheville</div>
+          <div class="lodging-brand">IHG Hotels &amp; Resorts</div>
+        </div>
+
+        <div class="lodging-body">
+
+          <div class="lodging-row">
+            <div class="lodging-row-icon">📍</div>
+            <div class="lodging-row-content">
+              <div class="lodging-row-label">Property Address</div>
+              <div class="lodging-row-value">1 Resort Drive</div>
+              <div class="lodging-row-sub">Asheville, North Carolina 28806</div>
+            </div>
+          </div>
+
+          <div class="lodging-row">
+            <div class="lodging-row-icon">📅</div>
+            <div class="lodging-row-content">
+              <div class="lodging-row-label">Stay Dates</div>
+              <div class="dates-grid mt-4">
+                <div class="date-block">
+                  <div class="date-block-label">Check-In</div>
+                  <div class="date-block-day">Friday</div>
+                  <div class="date-block-date">June 12, 2026</div>
+                </div>
+                <div class="date-block">
+                  <div class="date-block-label">Check-Out</div>
+                  <div class="date-block-day">Sunday</div>
+                  <div class="date-block-date">June 14, 2026</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lodging-row">
+            <div class="lodging-row-icon">🌙</div>
+            <div class="lodging-row-content">
+              <div class="lodging-row-label">Duration</div>
+              <div class="lodging-row-value">2 Nights</div>
+              <div class="lodging-row-sub">Friday evening arrival · Sunday morning departure</div>
+            </div>
+          </div>
+
+          <div class="lodging-row" style="border-bottom: none; padding-bottom: 0;">
+            <div class="lodging-row-icon">⚡</div>
+            <div class="lodging-row-content">
+              <div class="lodging-row-label">Quick Actions</div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                <button class="copy-btn" id="copy-address-btn">
+                  📋 Copy Address
+                </button>
+                <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=1+Resort+Drive+Asheville+NC+28806" target="_blank" rel="noopener" style="text-decoration: none;">
+                  🗺 Open in Maps
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- View 4: Packing -->
+    <section class="view" id="view-packing">
+      <div class="progress-header" id="progress-header">
+        <div class="progress-text">
+          <div class="progress-fraction" id="progress-fraction">
+            0 <span>of 9 packed</span>
+          </div>
+          <div class="progress-label">items ready to go</div>
+          <div class="progress-bar-track mt-4">
+            <div class="progress-bar-fill" id="progress-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="progress-ring-wrap">
+          <svg class="progress-ring" width="56" height="56" viewBox="0 0 56 56">
+            <circle class="progress-ring-bg" cx="28" cy="28" r="24"/>
+            <circle class="progress-ring-fill" id="ring-fill" cx="28" cy="28" r="24"
+              stroke-dasharray="150.8"
+              stroke-dashoffset="150.8"/>
+          </svg>
+          <div class="progress-ring-pct" id="ring-pct">0%</div>
+        </div>
+      </div>
+
+      <div id="packing-list"></div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // ── Application State ────────────────────────────────────────
+
+  const LODGING = {
+    name: 'Crowne Plaza Hotels & Resorts Asheville',
+    address: '1 Resort Drive, Asheville, North Carolina 28806',
+    checkin: 'Friday, June 12, 2026',
+    checkout: 'Sunday, June 14, 2026',
+  };
+
+  const ITINERARY = {
+    friday: [
+      {
+        time: 'Evening',
+        title: 'Arrival & Hotel Check-In',
+        subtitle: null,
+        location: '1 Resort Drive, Asheville, NC 28806',
+        mapQuery: '1+Resort+Drive+Asheville+NC+28806',
+        type: 'arrival',
+      },
+    ],
+    saturday: [
+      {
+        time: '12:45 PM',
+        endTime: '2:15 PM',
+        title: 'Lunch at Cúrate',
+        subtitle: 'Spanish Tapas',
+        location: '13 Biltmore Avenue, Asheville, NC 28801',
+        mapQuery: '13+Biltmore+Avenue+Asheville+NC+28801',
+        type: 'dining',
+      },
+      {
+        time: '6:45 PM',
+        endTime: '8:45 PM',
+        title: 'Dinner at Neng Jr.'s',
+        subtitle: 'Filipino Cuisine',
+        location: '701 Haywood Rd Ste 102, Asheville, NC 28806',
+        mapQuery: '701+Haywood+Rd+Asheville+NC+28806',
+        type: 'dining',
+      },
+    ],
+    sunday: [
+      {
+        time: 'Morning',
+        title: 'Hotel Check-Out',
+        subtitle: null,
+        location: '1 Resort Drive, Asheville, NC 28806',
+        mapQuery: '1+Resort+Drive+Asheville+NC+28806',
+        type: 'checkout',
+      },
+    ],
+  };
+
+  const PACKING = [
+    {
+      category: 'Essentials',
+      icon: '🔑',
+      items: [
+        { id: 'e1', name: 'ID / Wallet', packed: false },
+        { id: 'e2', name: 'Device Chargers', packed: false },
+        { id: 'e3', name: 'Medications', packed: false },
+      ],
+    },
+    {
+      category: 'Apparel',
+      icon: '👗',
+      items: [
+        { id: 'a1', name: 'Workout / Barre Gear', packed: false },
+        { id: 'a2', name: 'Casual Wear', packed: false },
+        { id: 'a3', name: 'Light Jacket', packed: false },
+      ],
+    },
+    {
+      category: 'Toiletries',
+      icon: '🧴',
+      items: [
+        { id: 't1', name: 'Skincare Routine', packed: false },
+        { id: 't2', name: 'Toothbrush', packed: false },
+        { id: 't3', name: 'Travel Kit', packed: false },
+      ],
+    },
+  ];
+
+  // ── App State ────────────────────────────────────────────────
+
+  const state = {
+    activeView: 'itinerary',
+    activeDay: 'friday',
+    packing: JSON.parse(JSON.stringify(PACKING)), // deep clone
+  };
+
+  // ── Helpers ──────────────────────────────────────────────────
+
+  function q(sel, ctx = document) { return ctx.querySelector(sel); }
+  function qa(sel, ctx = document) { return [...ctx.querySelectorAll(sel)]; }
+
+  function totalItems() {
+    return state.packing.reduce((acc, cat) => acc + cat.items.length, 0);
+  }
+
+  function packedItems() {
+    return state.packing.reduce((acc, cat) =>
+      acc + cat.items.filter(i => i.packed).length, 0);
+  }
+
+  // ── Navigation ───────────────────────────────────────────────
+
+  function switchView(viewId) {
+    state.activeView = viewId;
+    qa('.nav-tab').forEach(btn => {
+      const active = btn.dataset.view === viewId;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', active);
+    });
+    qa('.view').forEach(v => v.classList.remove('active'));
+    q(`#view-${viewId}`).classList.add('active');
+  }
+
+  // ── Itinerary Rendering ──────────────────────────────────────
+
+  function renderDaySelector() {
+    const days = [
+      { key: 'friday',   label: 'Friday',   date: 'Jun 12' },
+      { key: 'saturday', label: 'Saturday', date: 'Jun 13' },
+      { key: 'sunday',   label: 'Sunday',   date: 'Jun 14' },
+    ];
+
+    const container = q('#day-selector');
+    container.innerHTML = days.map(d => `
+      <button class="day-btn ${d.key === state.activeDay ? 'active' : ''}" data-day="${d.key}">
+        <span class="day-btn-label">${d.label}</span>
+        <span class="day-btn-date">${d.date}</span>
+      </button>
+    `).join('');
+
+    qa('.day-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.activeDay = btn.dataset.day;
+        qa('.day-btn').forEach(b => b.classList.toggle('active', b === btn));
+        renderTimeline();
+      });
+    });
+  }
+
+  function renderTimeline() {
+    const events = ITINERARY[state.activeDay] || [];
+    const container = q('#timeline-container');
+
+    if (!events.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <div class="empty-state-text">No events scheduled for this day.</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="timeline">${events.map((ev, i) => `
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-time">${ev.time}</div>
+          <div class="timeline-dot"></div>
+          ${i < events.length - 1 ? '<div class="timeline-line"></div>' : ''}
+        </div>
+        <div class="timeline-card">
+          <div class="event-title">${ev.title}</div>
+          ${ev.subtitle ? `<div class="event-duration">${ev.subtitle}</div>` : ''}
+          ${ev.endTime ? `<div class="event-duration">${ev.time} – ${ev.endTime}</div>` : ''}
+          <div class="event-location">
+            <span class="event-location-icon">📍</span>
+            <span class="event-location-text">${ev.location}</span>
+          </div>
+          <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=${ev.mapQuery}"
+             target="_blank" rel="noopener">
+            🗺 Open in Maps
+          </a>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  // ── Packing Rendering ────────────────────────────────────────
+
+  function renderPacking() {
+    const total = totalItems();
+    const packed = packedItems();
+    const pct = total > 0 ? Math.round((packed / total) * 100) : 0;
+    const circumference = 2 * Math.PI * 24; // r = 24
+
+    // Progress header
+    q('#progress-fraction').innerHTML = `${packed} <span>of ${total} packed</span>`;
+    q('#progress-bar').style.width = `${pct}%`;
+    q('#ring-fill').style.strokeDashoffset = circumference - (pct / 100) * circumference;
+    q('#ring-pct').textContent = `${pct}%`;
+
+    // Packing list
+    const container = q('#packing-list');
+    container.innerHTML = state.packing.map(cat => {
+      const catPacked = cat.items.filter(i => i.packed).length;
+      return `
+        <div class="packing-category">
+          <div class="packing-category-header">
+            <span class="category-icon">${cat.icon}</span>
+            <span class="category-title">${cat.category}</span>
+            <span class="category-count">${catPacked}/${cat.items.length}</span>
+          </div>
+          ${cat.items.map(item => `
+            <div class="packing-item ${item.packed ? 'packed' : ''}"
+                 data-item-id="${item.id}" role="checkbox" aria-checked="${item.packed}" tabindex="0">
+              <div class="packing-checkbox">
+                <span class="check-icon">✓</span>
+              </div>
+              <span class="packing-item-name">${item.name}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }).join('');
+
+    // Bind item click/keyboard
+    qa('.packing-item').forEach(el => {
+      const handler = () => toggleItem(el.dataset.itemId);
+      el.addEventListener('click', handler);
+      el.addEventListener('keydown', e => {
+        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handler(); }
+      });
+    });
+  }
+
+  function toggleItem(itemId) {
+    for (const cat of state.packing) {
+      const item = cat.items.find(i => i.id === itemId);
+      if (item) { item.packed = !item.packed; break; }
+    }
+    renderPacking();
+  }
+
+  // ── Lodging Actions ──────────────────────────────────────────
+
+  function initLodging() {
+    const btn = q('#copy-address-btn');
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(LODGING.address).then(() => {
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.innerHTML = '📋 Copy Address';
+          btn.classList.remove('copied');
+        }, 2000);
+      }).catch(() => {
+        // Fallback for restricted environments
+        const ta = document.createElement('textarea');
+        ta.value = LODGING.address;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.innerHTML = '📋 Copy Address';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+  }
+
+  // ── Boot ─────────────────────────────────────────────────────
+
+  function init() {
+    // Nav tab binding
+    qa('.nav-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchView(btn.dataset.view));
+    });
+
+    // Render all views
+    renderDaySelector();
+    renderTimeline();
+    renderPacking();
+    initLodging();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
